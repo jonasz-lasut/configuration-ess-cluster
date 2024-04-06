@@ -1,0 +1,161 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xcess.ess.jlasut.io
+spec:
+  writeConnectionSecretsToNamespace: upbound-system
+  compositeTypeRef:
+    apiVersion: ess.jlasut.io/v1alpha1
+    kind: XCESS
+  mode: Pipeline
+  pipeline:
+    - functionRef:
+        name: crossplane-contrib-function-go-templating
+      step: create-external-secrets-release
+      input:
+        apiVersion: gotemplating.fn.crossplane.io/v1beta1
+        kind: GoTemplate
+        source: Inline
+        inline:
+          template: |
+            {{ $labels := .observed.composite.resource.metadata.labels }}
+            {{ $secretProviderName := .observed.composite.resource.spec.parameters.secretProvider.name }}
+            {{ $secretStoreName := .observed.composite.resource.spec.parameters.secretStoreName }}
+            {{ $workloadIdentityName := .observed.composite.resource.spec.parameters.workloadIdentityName }}
+
+            apiVersion: helm.crossplane.io/v1beta1
+            kind: Release
+            metadata:
+              name: '{{ $secretStoreName }}-release'
+              labels: {{ toYaml $labels | nindent 4 }}
+              annotations:
+                crossplane.io/external-name: '{{ $secretStoreName }}-release'
+                gotemplating.fn.crossplane.io/composition-resource-name: '{{ $secretStoreName }}-release'
+            spec:
+              providerConfigRef:
+                name: '{{ .observed.composite.resource.spec.parameters.providerConfigName }}'
+              forProvider:
+                chart:
+                  name: external-secrets
+                  repository: https://charts.external-secrets.io
+                namespace: external-secrets
+                wait: true
+                values:
+                  {{ with $labels }}
+                  commonLabels: {{ toYaml . | nindent 8 }}
+                  {{ end }}
+                  installCRDs: true
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 256Mi
+                  webhook:
+                    resources:
+                      requests:
+                        cpu: 20m
+                        memory: 64Mi
+                  certController:
+                    resources:
+                      requests:
+                        cpu: 20m
+                        memory: 64Mi
+                  serviceAccount:
+                    name: '{{ $secretStoreName }}-sa'
+                  {{ if eq $secretProviderName "gcp" }}
+                    annotatations[iam.gke.io/gcp-service-account]: {{ $workloadIdentityName }}
+                  {{ else if eq $secretProviderName "aws" }}
+                    annotations[eks.amazonaws.com/role-arn]: {{ $workloadIdentityName }}
+                  {{ end }}
+
+    - functionRef:
+        name: crossplane-contrib-function-go-templating
+      step: create-cluster-secret-store
+      input:
+        apiVersion: gotemplating.fn.crossplane.io/v1beta1
+        kind: GoTemplate
+        source: Inline
+        inline:
+          template: |
+            {{ $secretProviderName := .observed.composite.resource.spec.parameters.secretProvider.name }}
+            {{ $secretStoreName := .observed.composite.resource.spec.parameters.secretStoreName }}
+
+            apiVersion: kubernetes.crossplane.io/v1alpha1
+            kind: Object
+            metadata:
+              name: '{{ $secretStoreName }}-css'
+              labels: {{ toYaml .observed.composite.resource.metadata.labels | nindent 4 }}
+              annotations:
+                crossplane.io/external-name: '{{ $secretStoreName }}'
+                gotemplating.fn.crossplane.io/composition-resource-name: '{{ $secretStoreName }}-css'
+            spec:
+              providerConfigRef:
+                name: '{{ .observed.composite.resource.spec.parameters.providerConfigName }}'
+              forProvider:
+                manifest:
+                  apiVersion: external-secrets.io/v1beta1
+                  kind: ClusterSecretStore
+                  metadata:
+                    name: '{{ $secretStoreName }}'
+                  spec:
+                    provider:
+                    {{ if eq $secretProviderName "gcp" }}
+                      {{ $gcpConfig := .observed.composite.resource.spec.parameters.secretProvider.gcp }}
+                      gcpsm:
+                        projectID: '{{ $gcpConfig.projectID }}'
+                    {{ else if eq $secretProviderName "aws" }}
+                      {{ $awsConfig := .observed.composite.resource.spec.parameters.secretProvider.aws }}
+                      aws:
+                        service: '{{ $awsConfig.service }}'
+                        region: '{{ $awsConfig.region }}'
+                        auth:
+                          jwt:
+                            serviceAccountRef:
+                              name: '{{ $secretStoreName }}-sa'
+                    {{ end }}
+
+    - functionRef:
+        name: crossplane-contrib-function-go-templating
+      step: create-external-secrets
+      input:
+        apiVersion: gotemplating.fn.crossplane.io/v1beta1
+        kind: GoTemplate
+        source: Inline
+        inline:
+          template: |
+            {{ range .observed.composite.resource.spec.parameters.operators.eso.secrets }}
+            ---
+            apiVersion: kubernetes.crossplane.io/v1alpha1
+            kind: Object
+            metadata:
+              name: '{{ .toSecret }}-secret'
+              labels: {{ toYaml $.observed.composite.resource.metadata.labels | nindent 4 }}
+              annotations:
+                crossplane.io/external-name: '{{ .toSecret }}'
+                gotemplating.fn.crossplane.io/composition-resource-name: '{{ .toSecret }}-secret'
+            spec:
+              providerConfigRef:
+                name: {{ $.observed.composite.resource.spec.parameters.providerConfigName }}
+              forProvider:
+                manifest:
+                  apiVersion: external-secrets.io/v1alpha1
+                  kind: ExternalSecret
+                  metadata:
+                    name: '{{ .toSecret }}'
+                    namespace: '{{ .toNamespace }}'
+                  spec:
+                    refreshInterval: "1h"
+                    secretStoreRef:
+                      kind: ClusterSecretStore
+                      name: eso-ess
+                    target:
+                      name: '{{ .toSecret }}'
+                      creationPolicy: Owner
+                      template:
+                        type: '{{ .type }}'
+                    dataFrom:
+                      - key: '{{ .fromSecret }}'
+            {{ end }}
+
+    - step: automatically-detect-ready-composed-resources
+      functionRef:
+        name: crossplane-contrib-function-auto-ready

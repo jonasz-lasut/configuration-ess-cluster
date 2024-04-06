@@ -1,0 +1,14 @@
+apiVersion: ess.jlasut.io/v1alpha1
+kind: XCESS
+metadata:
+  name: ess-aws
+spec:
+  parameters:
+    providerConfigName: configuration-ess-cluster
+    secretProvider:
+      name: aws
+      aws:
+        region: eu-west-1
+        service: SecretsManager
+    secretStoreName: ess-aws-store
+    workloadIdentityName: example-sa
