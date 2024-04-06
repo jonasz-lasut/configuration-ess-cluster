@@ -25,7 +25,7 @@ kind: Configuration
 metadata:
   name: configuration-cluster-ess
 spec:
-  package: xpkg.upbound.io/judasz/configuration-cluster-ess:v0.1.0
+  package: xpkg.upbound.io/judasz/configuration-ess-cluster:v0.1.0
 ```
 
 ## Next steps

@@ -26,5 +26,5 @@ spec:
       # renovate: datasource=github-releases depName=crossplane-contrib/function-go-templating
       version: "v0.4.1"
     - function: xpkg.upbound.io/crossplane-contrib/function-auto-ready
-    # renovate: datasource=github-releases depName=crossplane-contrib/function-auto-ready
+      # renovate: datasource=github-releases depName=crossplane-contrib/function-auto-ready
       version: "v0.2.1"
