@@ -1,0 +1,115 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xcess.ess.jlasut.io
+spec:
+  group: ess.jlasut.io
+  names:
+    kind: XCESS
+    plural: xcess
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  description: External Secrets Operator configuration parameters.
+                  properties:
+                    secretProvider:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          enum:
+                            - gcp
+                            - aws
+                        gcp:
+                          type: object
+                          properties:
+                            projectID:
+                              type: string
+                          required:
+                            - projectID
+                        aws:
+                          type: object
+                          properties:
+                            region:
+                              type: string
+                            service:
+                              type: string
+                              enum:
+                                - SecretsManager
+                                - ParameterStore
+                          required:
+                            - region
+                            - service
+                      required:
+                        - name
+                    secretStoreName:
+                      type: string
+                      default: ess-store
+                    workloadIdentityName:
+                      type: string
+                    providerConfigName:
+                      type: string
+                      description: Crossplane ProviderConfig to use for provisioning this resources
+                    operators:
+                      description: Configuration for operators.
+                      type: object
+                      default:
+                        eso:
+                          version: "v0.9.14"
+                          secrets: []
+                      properties:
+                        eso:
+                          description: Configuration for External Secrets Operator
+                          type: object
+                          properties:
+                            version:
+                              description: External Secrets Operator helm-chart version to run.
+                              type: string
+                              default: "v0.9.14"
+                            secrets:
+                              type: array
+                              description: List of secrets to be created from the secret store. The `store` parameter must be set to `true` for this feature to work.
+                              default: []
+                              items:
+                                type: object
+                                properties:
+                                  fromSecret:
+                                    type: string
+                                    description: The name or the key of secret in the external secret store
+                                  toSecret:
+                                    type: string
+                                    description: The name of the secret
+                                  toNamespace:
+                                    type: string
+                                    description: The namespace of the secret
+                                  type:
+                                    type: string
+                                    description: The type of the secret
+                                    default: Opaque
+                                  version:
+                                    type: string
+                                    default: latest
+                                required:
+                                  - fromSecret
+                                  - toSecret
+                                  - toNamespace
+                          required:
+                            - version
+                            - secrets
+                      required:
+                        - eso
+                  required:
+                    - providerConfigName
+                    - secretProvider
+                    - secretStoreName
+                    - workloadIdentityName

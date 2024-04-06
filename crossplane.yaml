@@ -1,0 +1,30 @@
+apiVersion: meta.pkg.crossplane.io/v1alpha1
+kind: Configuration
+metadata:
+  name: configuration-ess-cluster
+  annotations:
+    meta.crossplane.io/maintainer: Jonasz Lasut-Balcerzak <jonasz.lasut@gmail.com>
+    meta.crossplane.io/source: github.com/jonasz-lasut/configuration-ess-cluster
+    meta.crossplane.io/license: Apache-2.0
+    meta.crossplane.io/description: |
+      This Crossplane configuration is a starting point to use ESO with your secrets manager of choice.
+    meta.crossplane.io/readme: |
+      This Crossplane configuration is a starting point to use ESO with your secrets manager of choice.
+      To learn more checkout the [GitHub repo](https://github.com/jonasz-lasut/configuration-ess-cluster/)
+      that you can copy and customize to meet the exact needs of your organization!
+spec:
+  crossplane:
+    version: ">=v1.14.1-0"
+  dependsOn:
+    - provider: xpkg.upbound.io/crossplane-contrib/provider-helm
+      # renovate: datasource=github-releases depName=crossplane-contrib/provider-helm
+      version: "v0.17.0"
+    - provider: xpkg.upbound.io/crossplane-contrib/provider-kubernetes
+      # renovate: datasource=github-releases depName=crossplane-contrib/provider-kubernetes
+      version: "v0.12.1"
+    - function: xpkg.upbound.io/crossplane-contrib/function-go-templating
+      # renovate: datasource=github-releases depName=crossplane-contrib/function-go-templating
+      version: "v0.4.1"
+    - function: xpkg.upbound.io/crossplane-contrib/function-auto-ready
+    # renovate: datasource=github-releases depName=crossplane-contrib/function-auto-ready
+      version: "v0.2.1"
