@@ -149,7 +149,7 @@ spec:
                     refreshInterval: "1h"
                     secretStoreRef:
                       kind: ClusterSecretStore
-                      name: eso-ess
+                      name: '{{ $.observed.composite.resource.spec.parameters.secretStoreName }}'
                     target:
                       name: '{{ .toSecret }}'
                       creationPolicy: Owner
