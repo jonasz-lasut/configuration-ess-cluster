@@ -5,6 +5,7 @@ metadata:
 spec:
   parameters:
     providerConfigName: configuration-ess-cluster
+    createWorkloadIdentityServiceAccount: true
     secretProvider:
       name: aws
       aws:

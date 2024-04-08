@@ -18,6 +18,7 @@ spec:
         source: Inline
         inline:
           template: |
+            {{ $createServiceAccount := .observed.composite.resource.spec.parameters.createWorkloadIdentityServiceAccount}}
             {{ $labels := .observed.composite.resource.metadata.labels }}
             {{ $secretProviderName := .observed.composite.resource.spec.parameters.secretProvider.name }}
             {{ $secretStoreName := .observed.composite.resource.spec.parameters.secretStoreName }}
@@ -61,10 +62,12 @@ spec:
                         memory: 64Mi
                   serviceAccount:
                     name: '{{ $secretStoreName }}-sa'
-                  {{ if eq $secretProviderName "gcp" }}
-                    annotatations[iam.gke.io/gcp-service-account]: {{ $workloadIdentityName }}
-                  {{ else if eq $secretProviderName "aws" }}
-                    annotations[eks.amazonaws.com/role-arn]: {{ $workloadIdentityName }}
+                    create: {{ $createServiceAccount }}
+                    annotations:
+                    {{ if eq $secretProviderName "gcp" }}
+                      iam.gke.io/gcp-service-account: {{ $workloadIdentityName }}
+                    {{ else if eq $secretProviderName "aws" }}
+                      eks.amazonaws.com/role-arn: {{ $workloadIdentityName }}
                   {{ end }}
 
     - functionRef:

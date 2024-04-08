@@ -55,6 +55,9 @@ spec:
                     secretStoreName:
                       type: string
                       default: ess-store
+                    createWorkloadIdentityServiceAccount:
+                      type: boolean
+                      default: true
                     workloadIdentityName:
                       type: string
                     providerConfigName:
@@ -109,6 +112,7 @@ spec:
                       required:
                         - eso
                   required:
+                    - createWorkloadIdentityServiceAccount
                     - providerConfigName
                     - secretProvider
                     - secretStoreName
