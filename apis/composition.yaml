@@ -79,7 +79,7 @@ spec:
             {{ $secretProviderName := .observed.composite.resource.spec.parameters.secretProvider.name }}
             {{ $secretStoreName := .observed.composite.resource.spec.parameters.secretStoreName }}
 
-            apiVersion: kubernetes.crossplane.io/v1alpha1
+            apiVersion: kubernetes.crossplane.io/v1alpha2
             kind: Object
             metadata:
               name: '{{ $secretStoreName }}-css'
@@ -124,7 +124,7 @@ spec:
           template: |
             {{ range .observed.composite.resource.spec.parameters.operators.eso.secrets }}
             ---
-            apiVersion: kubernetes.crossplane.io/v1alpha1
+            apiVersion: kubernetes.crossplane.io/v1alpha2
             kind: Object
             metadata:
               name: '{{ .toSecret }}-secret'
