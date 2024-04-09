@@ -13,3 +13,14 @@ spec:
         service: SecretsManager
     secretStoreName: ess-aws-store
     workloadIdentityName: example-sa
+    operators:
+      eso:
+        secrets:
+        - fromSecret: external-secret
+          toSecret: in-cluster-secret
+          toNamespace: external-secrets
+          metadata:
+            annotations:
+              annotation1: value1
+            labels:
+              label1: value1

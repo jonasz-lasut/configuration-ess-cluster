@@ -154,6 +154,9 @@ spec:
                       name: '{{ .toSecret }}'
                       creationPolicy: Owner
                       template:
+                        {{ if .metadata }}
+                        metadata: {{ toYaml .metadata | nindent 14 }}
+                        {{ end }}
                         type: '{{ .type }}'
                     dataFrom:
                       - key: '{{ .fromSecret }}'

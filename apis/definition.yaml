@@ -95,6 +95,18 @@ spec:
                                   toNamespace:
                                     type: string
                                     description: The namespace of the secret
+                                  metadata:
+                                    type: object
+                                    description: Additional annotations and labels for the secret
+                                    properties:
+                                      annotations:
+                                        type: object
+                                        additionalProperties:
+                                          type: string
+                                      labels:
+                                        type: object
+                                        additionalProperties:
+                                          type: string
                                   type:
                                     type: string
                                     description: The type of the secret
