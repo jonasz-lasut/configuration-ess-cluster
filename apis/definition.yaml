@@ -1,9 +1,9 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: xcess.ess.jlasut.io
+  name: xcess.secrets.jlasut.io
 spec:
-  group: ess.jlasut.io
+  group: secrets.jlasut.io
   names:
     kind: XCESS
     plural: xcess

@@ -1,4 +1,4 @@
-apiVersion: ess.jlasut.io/v1alpha1
+apiVersion: secrets.jlasut.io/v1alpha1
 kind: XCESS
 metadata:
   name: ess-aws

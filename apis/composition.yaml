@@ -1,11 +1,11 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: xcess.ess.jlasut.io
+  name: xcess.secrets.jlasut.io
 spec:
   writeConnectionSecretsToNamespace: upbound-system
   compositeTypeRef:
-    apiVersion: ess.jlasut.io/v1alpha1
+    apiVersion: secrets.jlasut.io/v1alpha1
     kind: XCESS
   mode: Pipeline
   pipeline:
